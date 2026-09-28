@@ -762,7 +762,7 @@ class AgentEngineApp(A2aAgent):
         org_id = (context or {}).get("orgId") or (context or {}).get("org_id")
         hub_id = (context or {}).get("hubId") or (context or {}).get("hub_id")
         
-        agent_uuid = str(uuid.uuid5(uuid.NAMESPACE_URL, "https://github.com/Zco-AI-Labs/host-agent"))
+        agent_uuid = str(uuid.uuid5(uuid.NAMESPACE_URL, "https://github.com/Zco-AI-Labs/agent-host-test"))
         from app.app_utils.env_resolver import get_project_id
         project_id = get_project_id()
         
