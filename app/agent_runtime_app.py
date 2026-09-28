@@ -778,19 +778,22 @@ class AgentEngineApp(A2aAgent):
         if not self.agent_executor:
             self.set_up()
         base_runner = await self.agent_executor._resolve_runner()
-        cloned_agent = base_runner.agent.clone()
 
-        system_instruction = (context or {}).get("system_instruction")
-        if system_instruction:
-            base_skill_instruction = cloned_agent.instruction or ""
-            if base_skill_instruction and base_skill_instruction not in system_instruction:
-                cloned_agent.instruction = f"[IDENTITY & PERSONA]\n{system_instruction}\n\n[CORE ORCHESTRATION & MEMORY DIRECTIVES]\n{base_skill_instruction}"
-            else:
-                cloned_agent.instruction = system_instruction
+        # Parse message text for query routing
+        parsed_question = ""
+        if isinstance(message, str):
+            parsed_question = message
+        elif isinstance(message, dict):
+            parsed_question = message.get("text") or str(message)
+        elif hasattr(message, "parts"):
+            parsed_question = " ".join([getattr(p, "text", "") for p in message.parts if getattr(p, "text", None)])
+
+        from app.agent import resolve_active_agent
+        active_agent, runner_app_name = resolve_active_agent(context=context, parsed_question=parsed_question)
 
         from google.adk.runners import Runner
         runner = Runner(
-            agent=cloned_agent,
+            agent=active_agent,
             app_name=base_runner.app_name,
             session_service=base_runner.session_service,
             artifact_service=base_runner.artifact_service,
@@ -872,7 +875,7 @@ class AgentEngineApp(A2aAgent):
 
                         if memory_lines:
                             memory_text = "\n".join(memory_lines)
-                            cloned_agent.instruction += f"\n\n[USER LONG-TERM MEMORIES & PREFERENCES]\n{memory_text}\n"
+                            active_agent.instruction += f"\n\n[USER LONG-TERM MEMORIES & PREFERENCES]\n{memory_text}\n"
                             print(f"🧠 Injected {len(memory_lines)} retrieved user memories into stream turn context (scope={memory_user_id})")
                     except Exception as mem_search_err:
                         print(f"⚠️ Memory search non-critical: {mem_search_err}")

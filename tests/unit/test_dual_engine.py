@@ -24,3 +24,36 @@ def test_skill_single_source_of_truth():
     from app.agent import agent_name, agent_description
     assert agent_name == "host_agent_test"
     assert "Gemini 3.5" in agent_description
+
+def test_resolve_active_agent_embed_mode():
+    from app.agent import resolve_active_agent
+    ctx = {
+        "mode": "chat_embed",
+        "system_instruction": "Workspace: Zcoai\nPersona: Friendly hostess",
+        "domDigest": {
+            "title": "Zco Homepage",
+            "markdownDigest": "## Pricing\nCustom mobile apps start at $10k."
+        }
+    }
+    agent, app_name = resolve_active_agent(ctx, "Where is the pricing table?")
+    assert "reflex" in agent.name
+    assert agent.model.model == "gemini-3.5-flash-lite"
+    assert "CO-BROWSE VISUAL ACTUATION INSTRUCTIONS" in agent.instruction
+    assert "Zco Homepage" in agent.instruction
+    assert "Pricing" in agent.instruction
+    # Ensure no subagent delegation tools are attached
+    tool_names = [getattr(t, "__name__", "") for t in agent.tools]
+    assert "discover_agents" not in tool_names
+    assert "consultAgent" not in tool_names
+    assert "consult_agent" not in tool_names
+
+def test_resolve_active_agent_subagent_fallback():
+    from app.agent import resolve_active_agent
+    ctx = {
+        "mode": "chat_embed",
+        "system_instruction": "Workspace: Zcoai"
+    }
+    agent, app_name = resolve_active_agent(ctx, "Please consult_agent knowledge_agent about patents")
+    # Subagent keywords trigger Deliberation mode (root_agent with gemini-3.5-flash)
+    assert "reflex" not in agent.name
+    assert agent.model.model == "gemini-3.5-flash"
