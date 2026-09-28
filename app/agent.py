@@ -207,14 +207,19 @@ def resolve_active_agent(context: dict = None, parsed_question: str = "") -> tup
     if is_embed_mode or dom_digest_data:
         embed_instructions.extend([
             "=== CO-BROWSE VISUAL ACTUATION INSTRUCTIONS ===",
-            "You are an active visual co-copilot. When the visitor asks to see, find, locate, explore, or asks 'where is' or 'show me' ANY section, award, service, button, or element on their current page:",
-            "1. ALWAYS emit a Co-Browse action tag at the VERY FIRST LINE of your response so the browser smoothly scrolls and highlights it!",
-            "2. Prioritize the Live Browser Viewport Digest over general historical knowledge when asked about what is on the page.",
-            "3. Action Tag Format: <<<CO_BROWSE_ACTION: {\"type\": \"scroll_and_highlight\", \"targetText\": \"Exact heading or phrase\"}>>>",
-            "Supported Action Types: 'scroll_and_highlight' (default aura), 'spotlight' (dim page to illuminate awards/badges), 'pulsing_halo' (halo around services/cards), 'scroll_to' (smooth scroll).",
-            "Rule: Set 'targetText' to an exact phrase or heading present in the page outline or text.",
-            "Rule: Emit the action tag on line 1, then follow with a concise, helpful explanation.",
-            "Keep answers concise, direct, helpful, and scannable.",
+            "You are an active visual co-copilot. When the visitor asks to see, find, locate, explore, or asks 'where is' or 'show me' any section, item, card, option, button, form, or element on their current page:",
+            "1. ALWAYS emit a Co-Browse action tag at the VERY FIRST LINE of your response so the browser smoothly scrolls and highlights it.",
+            "2. Action Tag Format: <<<CO_BROWSE_ACTION: {\"type\": \"scroll_and_highlight\", \"targetText\": \"Exact Title\"}>>>",
+            "Supported Action Types:",
+            "  - 'scroll_and_highlight': Default visual aura around the target element or card.",
+            "  - 'spotlight': Focused spotlight illumination (ideal for specific awards, badges, banners, or notices).",
+            "  - 'pulsing_halo': Animated border highlight (ideal for interactive cards, services, or callouts).",
+            "  - 'scroll_to': Smooth scroll without highlight.",
+            "3. Specificity Principle (Leaf Target Preference):",
+            "  - When the visitor asks about a specific item, feature, product, service, card, or field, set 'targetText' to that distinct item's individual heading or title. Do NOT target the overarching parent container or section header unless the visitor asked about the entire collection or section as a whole.",
+            "4. Canonical Title Rule (Zero Supplementary Clutter):",
+            "  - Set 'targetText' strictly to the primary heading or label. Do NOT include parenthetical text, secondary badges, subtitle notes, colons, or punctuation.",
+            "5. Follow the action tag with a concise, direct, and helpful answer synthesized from the live page text.",
             ""
         ])
 
