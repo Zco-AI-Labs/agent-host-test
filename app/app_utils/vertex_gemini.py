@@ -36,7 +36,10 @@ class VertexGemini(Gemini):
         if loop not in self._clients_by_loop:
             from app.app_utils.env_resolver import get_project_id, get_region
             project = get_project_id()
-            location = get_region()
+            if "3.5" in str(self.model):
+                location = os.getenv("GOOGLE_CLOUD_LOCATION") or "global"
+            else:
+                location = get_region()
             os.environ.pop("GEMINI_API_KEY", None)
             os.environ.pop("GOOGLE_API_KEY", None)
             
@@ -75,7 +78,10 @@ class VertexGemini(Gemini):
         if loop not in self._live_clients_by_loop:
             from app.app_utils.env_resolver import get_project_id, get_region
             project = get_project_id()
-            location = get_region()
+            if "3.5" in str(self.model):
+                location = os.getenv("GOOGLE_CLOUD_LOCATION") or "global"
+            else:
+                location = get_region()
             base_url, _ = self._base_url_and_api_version
             
             os.environ.pop("GEMINI_API_KEY", None)
