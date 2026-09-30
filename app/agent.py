@@ -208,8 +208,9 @@ def resolve_active_agent(context: dict = None, parsed_question: str = "") -> tup
         embed_instructions.extend([
             "=== CO-BROWSE VISUAL ACTUATION INSTRUCTIONS ===",
             "You are an active visual co-copilot. When the visitor asks to see, find, locate, explore, or asks 'where is' or 'show me' any section, item, card, option, button, form, or element on their current page:",
-            "1. ALWAYS emit a Co-Browse action tag at the VERY FIRST LINE of your response so the browser smoothly scrolls and highlights it.",
+            "1. MANDATORY: ALWAYS emit the Co-Browse action tag at the VERY FIRST LINE of your response before any words or sentences.",
             "2. Action Tag Format: <<<CO_BROWSE_ACTION: {\"type\": \"scroll_and_highlight\", \"targetText\": \"Exact Title\"}>>>",
+            "   CRITICAL: Do NOT just say 'I have highlighted...' or 'I've pointed out...' without generating the <<<CO_BROWSE_ACTION:...>>> tag! The browser will NOT highlight or scroll unless this exact tag is present in your response.",
             "Supported Action Types:",
             "  - 'scroll_and_highlight': Default visual aura around the target element or card.",
             "  - 'spotlight': Focused spotlight illumination (ideal for specific awards, badges, banners, or notices).",
@@ -589,6 +590,15 @@ class HostAgent:
                     })
                 except Exception:
                     pass
+
+            if not any(a.get("type") == "CO_BROWSE" for a in actions if isinstance(a, dict)):
+                fb_match = re.search(r"(?:highlighted|highlight|scrolled to|pointing out|pointed out|found) (?:the )?[\"“'`]([^\"”'`\n]{2,50})[\"”'`]", text_response, re.IGNORECASE)
+                if fb_match:
+                    target_phrase = fb_match.group(1).strip()
+                    actions.append({
+                        "type": "CO_BROWSE",
+                        "payload": {"type": "scroll_and_highlight", "targetText": target_phrase}
+                    })
 
             # Return the result as a structured JSON string
             return json.dumps({
