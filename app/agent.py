@@ -492,6 +492,7 @@ class HostAgent:
                     print(f"⚠️ Memory search non-critical: {mem_search_err}")
 
             turn_prompt = parsed_question
+            spatial_lines = []
             if spatial_lines:
                 turn_prompt = f"\n[SPATIAL & LOCATION CONTEXT]\n" + "\n".join(spatial_lines) + f"\n\n{parsed_question}"
 
@@ -614,4 +615,12 @@ app = App(
     root_agent=root_agent,
     name="app",
 )
+
+# Initialize Agent Engine telemetry for Vertex AI Reasoning Engines
+try:
+    from app.app_utils.telemetry import setup_agent_engine_telemetry
+    setup_agent_engine_telemetry()
+except Exception as tel_err:
+    pass
+
 

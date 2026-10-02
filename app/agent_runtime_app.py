@@ -816,9 +816,14 @@ class AgentEngineApp(A2aAgent):
             from opentelemetry import trace
             current_span = trace.get_current_span()
             if current_span:
+                current_span.set_attribute("gen_ai.agent.name", "host_agent_test")
                 current_span.set_attribute("org_id", org_id or "unknown")
                 current_span.set_attribute("hub_id", hub_id or "unknown")
                 current_span.set_attribute("user_id", user_id_resolved or "unknown")
+                current_span.set_attribute("gen_ai.conversation_id", session_id_resolved)
+                model_name_val = getattr(getattr(cloned_agent, "model", None), "model_name", "gemini-2.5-flash")
+                current_span.set_attribute("gen_ai.request.model", model_name_val)
+                current_span.set_attribute("provider", "vertex")
         except Exception as otel_err:
             print(f"⚠️ Failed to set OpenTelemetry span attributes in stream query: {otel_err}")
 
